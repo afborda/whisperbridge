@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WhisperBridge</title>
+    <style>
+      /* Splash instantâneo antes do React hidratar — evita tela branca / erro de rede */
+      html, body, #root { margin:0; height:100%; background:#07080f; }
+      #boot-fallback {
+        position:fixed; inset:0; display:flex; align-items:center; justify-content:center;
+        flex-direction:column; gap:12px; color:#e2e8ff;
+        font-family: system-ui, sans-serif;
+        background: radial-gradient(ellipse at 50% 40%, #1e1b4b 0%, #07080f 70%);
+      }
+      #boot-fallback .ring {
+        width:56px; height:56px; border-radius:50%;
+        border:3px solid transparent;
+        border-top-color:#22d3ee; border-right-color:#a855f7;
+        border-bottom-color:#f472b6; border-left-color:#34d399;
+        animation: spin 1s linear infinite;
+      }
+      @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+  </head>
+
+  <body>
+    <div id="root">
+      <div id="boot-fallback">
+        <div class="ring"></div>
+        <div style="font-weight:600;letter-spacing:.06em">WhisperBridge</div>
+        <div style="font-size:12px;opacity:.55">Carregando interface…</div>
+      </div>
+    </div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

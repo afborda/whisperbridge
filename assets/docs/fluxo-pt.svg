@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 320" role="img" aria-label="Como o WhisperBridge funciona">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#3ec8ff"/>
+      <stop offset="100%" stop-color="#b07cff"/>
+    </linearGradient>
+    <filter id="s" x="-10%" y="-20%" width="120%" height="160%">
+      <feDropShadow dx="0" dy="6" stdDeviation="8" flood-color="#06101f" flood-opacity="0.45"/>
+    </filter>
+  </defs>
+  <rect width="1100" height="320" rx="20" fill="#0a1028"/>
+  <text x="40" y="42" fill="#8aa0c8" font-family="Segoe UI, system-ui, sans-serif" font-size="14" letter-spacing="1.4">COMO FUNCIONA</text>
+  <text x="40" y="68" fill="#e8eefc" font-family="Segoe UI, system-ui, sans-serif" font-size="22" font-weight="700">Do áudio da reunião até a legenda</text>
+
+  <!-- boxes -->
+  <g font-family="Segoe UI, system-ui, sans-serif" filter="url(#s)">
+    <rect x="36" y="100" width="190" height="150" rx="16" fill="#121a36" stroke="#2a3a66"/>
+    <text x="131" y="138" text-anchor="middle" fill="#3ec8ff" font-size="13" font-weight="700">1 · CAPTURA</text>
+    <text x="131" y="168" text-anchor="middle" fill="#f2f6ff" font-size="15" font-weight="600">Som do PC ou</text>
+    <text x="131" y="190" text-anchor="middle" fill="#f2f6ff" font-size="15" font-weight="600">microfone</text>
+    <text x="131" y="220" text-anchor="middle" fill="#8aa0c8" font-size="12">WASAPI · local</text>
+
+    <rect x="256" y="100" width="190" height="150" rx="16" fill="#121a36" stroke="#2a3a66"/>
+    <text x="351" y="138" text-anchor="middle" fill="#5aa8ff" font-size="13" font-weight="700">2 · OUVIR</text>
+    <text x="351" y="168" text-anchor="middle" fill="#f2f6ff" font-size="15" font-weight="600">Whisper no seu</text>
+    <text x="351" y="190" text-anchor="middle" fill="#f2f6ff" font-size="15" font-weight="600">computador</text>
+    <text x="351" y="220" text-anchor="middle" fill="#8aa0c8" font-size="12">áudio nunca sai da máquina</text>
+
+    <rect x="476" y="100" width="190" height="150" rx="16" fill="#121a36" stroke="#2a3a66"/>
+    <text x="571" y="138" text-anchor="middle" fill="#8b7cff" font-size="13" font-weight="700">3 · TRADUZIR</text>
+    <text x="571" y="168" text-anchor="middle" fill="#f2f6ff" font-size="15" font-weight="600">IA (Gemini etc.)</text>
+    <text x="571" y="190" text-anchor="middle" fill="#f2f6ff" font-size="15" font-weight="600">ou tradutor local</text>
+    <text x="571" y="220" text-anchor="middle" fill="#8aa0c8" font-size="12">só o texto, não o áudio</text>
+
+    <rect x="696" y="100" width="190" height="150" rx="16" fill="#121a36" stroke="#2a3a66"/>
+    <text x="791" y="138" text-anchor="middle" fill="#b07cff" font-size="13" font-weight="700">4 · LEGENDA</text>
+    <text x="791" y="168" text-anchor="middle" fill="#f2f6ff" font-size="15" font-weight="600">Janela flutuante</text>
+    <text x="791" y="190" text-anchor="middle" fill="#f2f6ff" font-size="15" font-weight="600">ou navegador</text>
+    <text x="791" y="220" text-anchor="middle" fill="#8aa0c8" font-size="12">por cima do Teams / Meet</text>
+  </g>
+
+  <!-- arrows -->
+  <g fill="url(#g)">
+    <polygon points="232,175 250,168 250,182"/>
+    <polygon points="452,175 470,168 470,182"/>
+    <polygon points="672,175 690,168 690,182"/>
+  </g>
+  <text x="910" y="168" fill="#8aa0c8" font-family="Segoe UI, system-ui, sans-serif" font-size="12">PT, TH, ES…</text>
+  <text x="910" y="188" fill="#8aa0c8" font-family="Segoe UI, system-ui, sans-serif" font-size="12">você escolhe</text>
+</svg>

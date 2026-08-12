@@ -1,0 +1,59 @@
+# ── Python ───────────────────────────────────────────────────────────────────
+.venv/
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+.eggs/
+*.egg
+
+# ── Modelos de IA (grandes demais para o git) ─────────────────────────────────
+models/
+*.bin
+*.safetensors
+*.onnx
+*.pt
+*.pth
+
+# ── Rust / Tauri ─────────────────────────────────────────────────────────────
+apps/desktop/src-tauri/target/
+apps/desktop/node_modules/
+apps/desktop/dist/
+
+# ── Node ─────────────────────────────────────────────────────────────────────
+node_modules/
+.npm
+
+# ── OS ───────────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── IDEs ─────────────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.suo
+*.user
+
+# ── Logs e temporários ───────────────────────────────────────────────────────
+*.log
+*.tmp
+.env
+.env.local
+user-settings.json
+user-settings.json.tmp
+bakeoff-result.json
+live-audit.json
+test_clean_translate.py
+test_quality_bakeoff.py
+test_live_audit.py
+
+# ── Artefatos de build ────────────────────────────────────────────────────────
+*.exe
+*.msi
+*.dmg
+*.AppImage
+!apps/desktop/src-tauri/icons/*.ico

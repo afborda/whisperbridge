@@ -1,0 +1,51 @@
+# WhisperBridge — dependências diretas.
+#
+# NÃO rode "pip install -r requirements.txt" direto.
+# Windows: .\setup.ps1     Linux: ./setup.sh  (usa requirements-linux.txt)
+#
+# Motivo concreto, verificado na prática: o PyTorch fica de fora deste arquivo
+# porque a build CUDA (2.5.1+cu121) só existe no índice do PyTorch. O pip lê o
+# "+cu121" como versão LOCAL, ou seja, considera qualquer torch do PyPI mais
+# novo — e como silero-vad e pyannote pedem apenas "torch>=1.12", ele
+# DESINSTALA a build CUDA e instala a CPU no lugar. Sem erro. O resultado é
+# torch.cuda.is_available() virar False e os perfis de GPU aparecerem
+# bloqueados, como se a máquina não tivesse placa.
+#
+# O setup.ps1 evita isso instalando o torch primeiro e passando um arquivo de
+# --constraint que impede o pip de mexer nele depois.
+#
+# As versões estão fixadas porque este conjunto é frágil: o torch 2.5.1 é o
+# teto imposto pelo CTranslate2 e pelo pyannote — subir quebra os dois.
+
+# ── servidor ─────────────────────────────────────────────────────────────────
+fastapi==0.141.1
+uvicorn==0.52.1
+websockets==17.0.1
+httpx==0.28.1            # também é o cliente da tradução na nuvem
+python-dotenv==1.2.2
+
+# ── áudio ────────────────────────────────────────────────────────────────────
+PyAudioWPatch==0.2.12.8  # WASAPI loopback; só existe no Windows
+numpy==2.4.4
+scipy==1.18.0
+
+# ── voz / transcrição ────────────────────────────────────────────────────────
+silero-vad==6.2.1
+faster-whisper==1.2.1    # traz o ctranslate2, que é quem prende o torch em 2.5.x
+
+# ── tradução local ───────────────────────────────────────────────────────────
+transformers==5.14.1
+sentencepiece==0.2.2     # o MarianTokenizer não carrega sem isto
+
+scikit-learn==1.9.0      # re-clusterização das galerias de embedding
+
+# ── identificação de falantes: NÃO está aqui, de propósito ───────────────────
+# O pyannote.audio 4.0.7 declara "torch>=2.8.0", mas este projeto roda em
+# torch 2.5.1 (teto do CTranslate2). A combinação funciona na prática, porém o
+# resolvedor do pip se recusa a montá-la — deixá-lo neste arquivo fazia a
+# instalação inteira falhar com "conflicting dependencies".
+#
+# Então ele virou opcional:  .\setup.ps1 -Speakers
+#
+# Sem ele o app roda normal; só perde o "Pessoa 1 / Pessoa 2" e cai na
+# heurística de pausa do useTranslationSocket. Também precisa de HF_TOKEN.
