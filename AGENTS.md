@@ -41,18 +41,6 @@ npm run tauri build              # exe em src-tauri/target/release/desktop.exe
 
 Log do launcher: `%TEMP%\WhisperBridge-launch.log`.
 
-### Testes manuais
-
-`test_*.py` na raiz são **smoke tests interativos**, não unitários. Cada um abre o dispositivo de loopback e precisa de áudio em inglês tocando na máquina. Espelham as camadas do pipeline:
-
-```powershell
-.venv\Scripts\python.exe -u test_audio.py          # só WASAPI
-.venv\Scripts\python.exe -u test_vad.py            # + Silero VAD
-.venv\Scripts\python.exe -u test_transcription.py  # + Whisper
-.venv\Scripts\python.exe -u test_translation.py    # + Helsinki EN→PT
-.venv\Scripts\python.exe -u test_websocket.py      # ponta a ponta contra o engine no ar
-```
-
 ## Arquitetura
 
 ### Dois processos
