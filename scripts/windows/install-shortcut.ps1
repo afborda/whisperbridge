@@ -3,13 +3,18 @@ $here = if ($PSScriptRoot) { $PSScriptRoot } else { Split-Path -Parent $MyInvoca
 $proj = (Resolve-Path (Join-Path $here "..\..")).Path
 $desktop = [Environment]::GetFolderPath("Desktop")
 $srcIco = Join-Path $proj "assets\brand\whisperbridge.ico"
-$deskIco = Join-Path $desktop "WhisperBridge-app.ico"
 $vbs = Join-Path $proj "WhisperBridge.vbs"
 $lnkPath = Join-Path $desktop "WhisperBridge.lnk"
+# Nome novo a cada troca de logo: o Explorer cacheia pelo caminho do .ico
+$hash = (Get-FileHash -LiteralPath $srcIco -Algorithm SHA256).Hash.Substring(0, 8).ToLower()
+$deskIco = Join-Path $desktop "WhisperBridge-$hash.ico"
 
 if (-not (Test-Path $srcIco)) { Write-Host "ERRO: $srcIco nao encontrado" -ForegroundColor Red; exit 1 }
 if (-not (Test-Path $vbs)) { Write-Host "ERRO: $vbs nao encontrado" -ForegroundColor Red; exit 1 }
 
+Get-ChildItem -LiteralPath $desktop -Filter "WhisperBridge*.ico" -ErrorAction SilentlyContinue |
+    Where-Object { $_.FullName -ne $deskIco } |
+    Remove-Item -Force -ErrorAction SilentlyContinue
 Copy-Item $srcIco $deskIco -Force
 if (Test-Path $lnkPath) { Remove-Item $lnkPath -Force }
 
