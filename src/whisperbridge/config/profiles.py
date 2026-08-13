@@ -20,9 +20,10 @@ from dataclasses import dataclass, asdict
 # ── backends de tradução ──────────────────────────────────────────────────────
 LOCAL = "local"
 GEMINI = "gemini"
-OPENAI_COMPAT = "openai-compat"  # GPT, DeepSeek, Kimi, MiniMax — todos falam o mesmo dialeto
+OPENAI_COMPAT = "openai-compat"  # GPT, DeepSeek, Kimi, MiniMax, Claude via OpenRouter
+CLAUDE = "claude"
 
-CLOUD_BACKENDS = {GEMINI, OPENAI_COMPAT}
+CLOUD_BACKENDS = {GEMINI, OPENAI_COMPAT, CLAUDE}
 
 
 @dataclass(frozen=True)
@@ -138,8 +139,8 @@ def has_cloud_key(backend: str) -> bool:
     s = get_settings()
     if backend == GEMINI:
         return bool(s.effective_gemini_key())
-    if backend == OPENAI_COMPAT:
-        return bool(s.effective_llm_key())
+    if backend in (OPENAI_COMPAT, CLAUDE):
+        return bool(s.effective_llm_key() or os.getenv("ANTHROPIC_API_KEY") or os.getenv("CLAUDE_API_KEY"))
     return True
 
 

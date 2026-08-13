@@ -52,8 +52,8 @@ def _price_for(model: str) -> Optional[tuple[float, float]]:
             return price
     return None
 
-# Idioma de destino da nuvem. O Whisper daqui é só inglês (.en); a nuvem é que
-# pode ir para PT, tailandês, espanhol, etc. MarianMT local só cobre EN→PT.
+# MarianMT local só cobre EN→PT. Com IA (Gemini, GPT, Claude…) o par é o que
+# a pessoa escolheu em Configurações: SOURCE_LANG → TARGET_LANG.
 _LANG_LABELS = {
     "pt": "português do Brasil",
     "pt-br": "português do Brasil",
@@ -75,8 +75,24 @@ def target_lang() -> str:
     return (os.getenv("TARGET_LANG") or "pt-BR").strip() or "pt-BR"
 
 
+def source_lang() -> str:
+    return (os.getenv("SOURCE_LANG") or "en").strip() or "en"
+
+
+def _label_for(code: str) -> str:
+    raw = (code or "").strip()
+    key = raw.lower()
+    if key in ("auto", ""):
+        return "o idioma detectado automaticamente"
+    return _LANG_LABELS.get(key, _LANG_LABELS.get(key.split("-")[0], raw))
+
+
 def target_lang_label() -> str:
-    return _LANG_LABELS.get(target_lang().lower(), target_lang())
+    return _label_for(target_lang())
+
+
+def source_lang_label() -> str:
+    return _label_for(source_lang())
 
 
 def is_portuguese_target() -> bool:
@@ -84,27 +100,27 @@ def is_portuguese_target() -> bool:
 
 
 def _system_prompt() -> str:
-    label = target_lang_label()
+    src = source_lang_label()
+    dst = target_lang_label()
     extra = ""
     if is_portuguese_target():
         extra = (
             '- Português do Brasil natural e falado: "você" (nunca "tu"), gerúndio '
             '("está fazendo", nunca "está a fazer"), próclise ("me diz", nunca "diz-me").\n'
         )
-    return f"""Você traduz legendas de reunião em tempo real do inglês para {label}.
+    return f"""Você traduz legendas de reunião em tempo real de {src} para {dst}.
 
-O texto em inglês veio de reconhecimento automático de fala e PODE CONTER ERROS de
-transcrição — palavras trocadas por outras de som parecido (ex.: "cattle" em vez de
-"catalog", "work" em vez de "workspace"), nomes próprios errados, frases truncadas.
-Use o contexto das falas anteriores para inferir o que a pessoa realmente disse e
-traduza o sentido correto, não o erro literal.
+O texto de origem veio de reconhecimento automático de fala e PODE CONTER ERROS de
+transcrição — palavras trocadas por outras de som parecido, nomes próprios errados,
+frases truncadas. Use o contexto das falas anteriores para inferir o que a pessoa
+realmente disse e traduza o sentido correto, não o erro literal.
 
 Regras:
-{extra}- Mantenha em inglês os termos técnicos de trabalho: deploy, pipeline, sprint, backlog,
-  pull request, feature flag, rollback, hotfix, dashboard, API, code review, catalog, workspace.
+{extra}- Mantenha no original os termos técnicos de trabalho quando for o costume da equipe
+  (deploy, pipeline, sprint, backlog, pull request, API, dashboard…).
 - Uma saída para cada entrada, na mesma ordem. Não junte, não divida, não numere.
 - Não explique, não comente, não adicione nada que não foi dito.
-- Nunca repita a mesma palavra ou o mesmo trecho em loop. Se o inglês vier repetido, traduza uma vez só.
+- Nunca repita a mesma palavra ou o mesmo trecho em loop. Se o original vier repetido, traduza uma vez só.
 - Se um trecho for curto ou ambíguo demais, traduza literalmente em vez de inventar.
 
 Responda APENAS com um array JSON de strings, sem cercas de código."""
@@ -129,9 +145,9 @@ def _build_user(chunks_en: list[str], drafts_pt: Optional[list[str]], context: O
             parts.append(f"PT: {pt}")
             parts.append("")
     else:
-        parts.append(f"Traduza para {target_lang_label()}:")
+        parts.append(f"Traduza de {source_lang_label()} para {target_lang_label()}:")
         parts.append("")
-        parts.extend(f"EN: {c}" for c in chunks_en)
+        parts.extend(f"ORIG: {c}" for c in chunks_en)
         parts.append("")
 
     parts.append(f"Responda com um array JSON de exatamente {len(chunks_en)} strings.")
@@ -288,8 +304,52 @@ class GeminiTranslator(CloudTranslator):
         return data["candidates"][0]["content"]["parts"][0]["text"]
 
 
+class ClaudeTranslator(CloudTranslator):
+    """Anthropic Messages API — chave oficial, sem SDK."""
+
+    name = "claude"
+
+    def __init__(self, timeout_s: float | None = None):
+        super().__init__(timeout_s)
+        self.api_key = (
+            os.getenv("ANTHROPIC_API_KEY")
+            or os.getenv("CLAUDE_API_KEY")
+            or os.getenv("LLM_API_KEY")
+            or ""
+        )
+        if not self.api_key:
+            raise RuntimeError("ANTHROPIC_API_KEY / LLM_API_KEY não configurada")
+        self.model = os.getenv("CLAUDE_MODEL") or os.getenv("LLM_MODEL") or "claude-3-5-haiku-latest"
+        self.url = "https://api.anthropic.com/v1/messages"
+        print(f"Tradutor Claude ({self.model}) pronto.", flush=True)
+
+    def _request(self, system: str, user: str) -> str:
+        resp = self._client.post(
+            self.url,
+            headers={
+                "x-api-key": self.api_key,
+                "anthropic-version": "2023-06-01",
+                "content-type": "application/json",
+            },
+            json={
+                "model": self.model,
+                "max_tokens": 800,
+                "temperature": 0.2,
+                "system": system,
+                "messages": [{"role": "user", "content": user}],
+            },
+        )
+        resp.raise_for_status()
+        data = resp.json()
+        u = data.get("usage") or {}
+        self._note_usage(u.get("input_tokens", 0), u.get("output_tokens", 0))
+        parts = data.get("content") or []
+        texts = [p.get("text", "") for p in parts if p.get("type") == "text"]
+        return "".join(texts)
+
+
 class OpenAICompatTranslator(CloudTranslator):
-    """Cobre GPT, DeepSeek, Kimi e MiniMax — todos expõem /chat/completions."""
+    """Cobre GPT, DeepSeek, Kimi, MiniMax e Claude via OpenRouter."""
 
     name = "openai-compat"
 
@@ -330,6 +390,8 @@ def load_cloud_translator(backend: str) -> Optional[CloudTranslator]:
     try:
         if backend == "gemini":
             return GeminiTranslator()
+        if backend == "claude":
+            return ClaudeTranslator()
         if backend == "openai-compat":
             return OpenAICompatTranslator()
     except Exception as e:

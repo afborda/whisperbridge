@@ -33,17 +33,17 @@ Não é um plugin do Zoom. Não precisa de conta. O áudio da reunião **não va
 
 | O que ele faz | Como |
 |---|---|
-| Legendas ao vivo em reunião de inglês | Captura WASAPI (Windows) ou monitor Pulse/PipeWire (Linux) |
-| Traduzir Teams / Zoom / Meet para português | Whisper no PC + tradução local ou com a **sua** chave (Gemini, GPT, DeepSeek…) |
-| Overlay por cima de tudo | Janela flutuante (Tauri) ou a mesma UI no navegador |
-| Privacidade | Transcrição 100% local. A nuvem, se usada, recebe só texto |
-| Sem placa de vídeo | Também roda na CPU, mais lento |
+| Legendas ao vivo em qualquer reunião | Captura o som do PC (Teams, Zoom, Meet, YouTube) ou o microfone |
+| Vários idiomas | Com IA (Gemini, Claude, GPT…): você escolhe o idioma da fala **e** o da legenda |
+| Sem chave / sem internet | Tradução local só inglês → português |
+| Overlay por cima de tudo | Janela flutuante ou a mesma UI no navegador |
+| Privacidade | Transcrição 100% local. A nuvem, se usada, recebe **só texto** |
 
 ### Para quem é
 
-- Quem entra em daily, standup ou cliente **em inglês** e quer ler em português (ou espanhol, tailandês, japonês…).
+- Daily, standup ou cliente em inglês, espanhol, francês… e você quer ler em português (ou o inverso).
 - Quem assiste aula, webinar ou YouTube e precisa de **legenda instantânea**.
-- Quem não pode mandar o áudio da empresa para um serviço de transcrição na nuvem.
+- Quem não pode mandar o **áudio** da empresa para um serviço de transcrição na nuvem.
 
 ### O que ele não é
 
@@ -57,8 +57,8 @@ Não substitui um intérprete humano em reunião jurídica ou médica crítica. 
 
 1. **Capturar** — escolhe *Som do PC* (o que está saindo no fone/caixa) ou *Microfone*.
 2. **Ouvir** — o Whisper (`faster-whisper`) transcreve no seu computador, na GPU se houver NVIDIA, senão na CPU.
-3. **Traduzir** — modo local (inglês → português, sem internet) ou modo IA com a chave que você cola nas Configurações. Só o **texto** atravessa a rede.
-4. **Legendar** — a frase aparece na janela flutuante, por cima da reunião. Você escolhe o idioma da fala e o da legenda.
+3. **Traduzir** — no modo **Recomendado (IA)** a Gemini/Claude/GPT traduz o par que você escolheu (inglês→português, português→tailandês, espanhol→japonês…). Sem IA, o modelo local cobre só inglês → português.
+4. **Legendar** — a frase aparece na janela flutuante, por cima da reunião.
 
 ## O que você precisa
 
@@ -124,10 +124,10 @@ O instalador cria o `.venv`, instala o PyTorch certo, compila a UI e gera o `.en
 .\scripts\windows\start-browser.ps1          # só navegador
 ```
 
-1. Toque uma reunião ou vídeo **em inglês** (ou fale no microfone).
+1. Toque a reunião ou o vídeo (ou fale no microfone).
 2. Escolha **Som do PC** ou **Microfone**.
 3. Clique em **Iniciar**.
-4. No modo **Recomendado (IA)** (⚙): cole a chave e escolha os idiomas da fala e da legenda.
+4. No modo **Recomendado (IA)** (⚙): cole a chave (Gemini, Claude, GPT…) e escolha o idioma da fala e o da legenda.
 
 Não feche com **✕** se quiser deixar o servidor rodando — use **minimizar**. O ✕ desliga o motor de propósito (libera a memória da placa).
 
@@ -138,7 +138,7 @@ Para matar um processo preso: `.\scripts\windows\stop.ps1`
 | Nome na tela | Quando usar |
 |---|---|
 | **Neste PC (rápido)** | Sem internet. Inglês → português neste computador. |
-| **Recomendado (IA)** | Melhor tradução. Você cola a chave (Gemini etc.) e escolhe os idiomas. |
+| **Recomendado (IA)** | Melhor tradução, qualquer par de idiomas. Cole a chave (Gemini, Claude, GPT…). |
 | **IA sem placa de vídeo** | Quer liberar o jogo / outro app. Ouvir fica mais lento. |
 | **Neste PC (sem internet)** | Sem placa e sem rede. Mais lento. |
 
@@ -146,11 +146,14 @@ Custo típico da IA no Gemini Flash-Lite: **cerca de US$ 0,02–0,04 por hora** 
 
 ## Chave da IA (opcional)
 
-Não é obrigatória. Sem chave, o modo local já gera legendas inglês → português.
+Não é obrigatória. Sem chave, o modo local já gera legendas **inglês → português**.
+Com chave, o par é o que você escolher (incluindo Claude).
 
 1. Abra **⚙ → Idiomas e chave da IA**
-2. Gemini: [aistudio.google.com/apikey](https://aistudio.google.com/apikey)
-3. Ou GPT / DeepSeek: cole a chave + URL + modelo
+2. Escolha o idioma que estão falando e o da legenda
+3. Gemini: [aistudio.google.com/apikey](https://aistudio.google.com/apikey)
+4. Claude: cole a chave da Anthropic (o app fala a API oficial)
+5. Ou GPT / DeepSeek: cole a chave + URL + modelo
 
 A chave fica só na sua máquina (`user-settings.json` e `.env` — não vão para o Git).
 
@@ -167,8 +170,11 @@ A chave fica só na sua máquina (`user-settings.json` e `.env` — não vão pa
 **Como traduzir uma reunião do Zoom, Teams ou Google Meet para português?**  
 Abra o WhisperBridge, escolha *Som do PC*, clique em *Iniciar* e deixe a reunião tocando no fone. As legendas aparecem por cima da janela. Não precisa instalar nada no Zoom/Teams.
 
+**Dá para traduzir de espanhol, francês, japonês… não só inglês?**  
+Sim, no modo **Recomendado (IA)**. Em ⚙ você escolhe o idioma da fala e o da legenda. Claude, Gemini ou GPT traduzem o par. Sem IA, o tradutor local é só inglês → português.
+
 **O WhisperBridge envia o áudio da reunião para a nuvem?**  
-Não. A transcrição é local (Whisper). Se você ligar o modo IA, só o **texto** já transcrito vai para o Gemini/GPT que você configurou.
+Não. A transcrição é local (Whisper). Se você ligar o modo IA, só o **texto** já transcrito vai para o Gemini/Claude/GPT que você configurou.
 
 **Funciona sem internet?**  
 Sim, nos modos *Neste PC*. A tradução fica em inglês → português no modelo local.
@@ -206,6 +212,7 @@ whisperbridge/
 WhisperBridge captures **system audio** (or the microphone), transcribes speech **on-device** with Whisper, and shows a translation overlay on top of the call. It is not a Zoom plugin. Meeting audio **never leaves the PC**.
 
 - Daily standups and client calls in a language you only half-follow
+- Any spoken / subtitle pair with Gemini, Claude or GPT (local-only is English → Portuguese)
 - Lectures, webinars, YouTube — anything the computer is already playing
 - Teams that cannot send call audio to a cloud transcription API
 
@@ -215,7 +222,7 @@ WhisperBridge captures **system audio** (or the microphone), transcribes speech 
 
 1. **Capture** — *PC sound* (loopback) or *Microphone*.
 2. **Listen** — `faster-whisper` runs on your GPU or CPU. Audio stays here.
-3. **Translate** — local English → Portuguese, or your own Gemini / GPT / DeepSeek key. **Text only** goes to the network.
+3. **Translate** — local English → Portuguese, or your Gemini / Claude / GPT key for any language pair. **Text only** goes to the network.
 4. **Subtitle** — always-on-top overlay, or the same UI in the browser. You pick spoken and subtitle languages.
 
 ## Requirements

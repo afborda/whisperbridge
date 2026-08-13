@@ -26,7 +26,7 @@ LANGUAGES: list[dict[str, str]] = [
 ]
 
 _VALID_LANG = {x["id"] for x in LANGUAGES}
-_VALID_BACKEND = {"gemini", "openai-compat"}
+_VALID_BACKEND = {"gemini", "openai-compat", "claude"}
 
 
 def _root() -> str:
@@ -67,7 +67,13 @@ class UserSettings:
         return (self.gemini_key or os.getenv("GEMINI_API_KEY") or "").strip()
 
     def effective_llm_key(self) -> str:
-        return (self.llm_key or os.getenv("LLM_API_KEY") or "").strip()
+        return (
+            self.llm_key
+            or os.getenv("LLM_API_KEY")
+            or os.getenv("ANTHROPIC_API_KEY")
+            or os.getenv("CLAUDE_API_KEY")
+            or ""
+        ).strip()
 
     def whisper_language(self) -> str | None:
         """Código que o faster-whisper entende, ou None = detectar."""
@@ -161,6 +167,7 @@ def save(data: UserSettings) -> None:
 
 
 def apply_environ(data: UserSettings) -> None:
+    os.environ["SOURCE_LANG"] = data.source_lang
     os.environ["TARGET_LANG"] = data.target_lang
     os.environ["TRANSLATOR_BACKEND"] = data.backend
     if data.gemini_key:
@@ -169,6 +176,8 @@ def apply_environ(data: UserSettings) -> None:
         os.environ["GEMINI_MODEL"] = data.gemini_model
     if data.llm_key:
         os.environ["LLM_API_KEY"] = data.llm_key
+        if data.backend == "claude":
+            os.environ["ANTHROPIC_API_KEY"] = data.llm_key
     if data.llm_base_url:
         os.environ["LLM_BASE_URL"] = data.llm_base_url
     if data.llm_model:
@@ -189,6 +198,8 @@ def update_from_ui(msg: dict) -> tuple[UserSettings, bool]:
         d["target_lang"] = str(msg["targetLang"])
     if msg.get("backend") in _VALID_BACKEND:
         d["backend"] = msg["backend"]
+    if d["backend"] == "claude" and not d.get("llm_model"):
+        d["llm_model"] = "claude-3-5-haiku-latest"
     if msg.get("geminiModel"):
         d["gemini_model"] = str(msg["geminiModel"]).strip()
     if msg.get("llmBaseUrl"):

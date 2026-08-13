@@ -48,6 +48,9 @@ export function SettingsPanel({ open, settings, cloud, saving, onClose, onSave }
       payload.llmBaseUrl = llmBaseUrl;
       payload.llmModel = llmModel;
     }
+    if (backend === "claude" && llmModel.trim()) {
+      payload.llmModel = llmModel.trim();
+    }
     onSave(payload);
   }
 
@@ -101,18 +104,31 @@ export function SettingsPanel({ open, settings, cloud, saving, onClose, onSave }
 
           {!cloud && (
             <p style={hint}>
-              Neste modo a tradução é só inglês → português neste PC.
-              Para outros idiomas, escolha <b>Recomendado (IA)</b>.
+              Sem IA a tradução local é só inglês → português.
+              Com <b>Recomendado (IA)</b> você escolhe qualquer par
+              (espanhol→português, inglês→tailandês, português→japonês…).
+            </p>
+          )}
+          {cloud && (
+            <p style={hint}>
+              A IA traduz o par que você escolher acima. Claude, Gemini, GPT —
+              o áudio continua neste PC; só o texto vai para a API.
             </p>
           )}
         </div>
 
         <div style={{ padding: "8px 14px 14px", borderTop: "1px solid rgba(255,255,255,0.07)" }}>
           <Label>Sua IA para traduzir</Label>
-          <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
+          <div style={{ display: "flex", gap: 6, marginBottom: 8, flexWrap: "wrap" }}>
             <Chip on={backend === "gemini"} onClick={() => setBackend("gemini")}>Gemini</Chip>
+            <Chip on={backend === "claude"} onClick={() => {
+              setBackend("claude");
+              if (!llmModel || /gpt|deepseek|moonshot|minimax/i.test(llmModel)) {
+                setLlmModel("claude-3-5-haiku-latest");
+              }
+            }}>Claude</Chip>
             <Chip on={backend === "openai-compat"} onClick={() => setBackend("openai-compat")}>
-              GPT / DeepSeek / outra
+              GPT / outra
             </Chip>
           </div>
 
@@ -132,6 +148,18 @@ export function SettingsPanel({ open, settings, cloud, saving, onClose, onSave }
             </button>
           </div>
 
+          {backend === "claude" && (
+            <>
+              <Label>Modelo</Label>
+              <input
+                value={llmModel || "claude-3-5-haiku-latest"}
+                onChange={e => setLlmModel(e.target.value)}
+                placeholder="claude-3-5-haiku-latest"
+                style={input}
+              />
+            </>
+          )}
+
           {backend === "openai-compat" && (
             <>
               <Label>Endereço da API</Label>
@@ -142,8 +170,8 @@ export function SettingsPanel({ open, settings, cloud, saving, onClose, onSave }
           )}
 
           <p style={hint}>
-            A chave fica só neste computador. Mudar só o idioma da legenda é instantâneo.
-            Mudar o idioma que estão falando (ex.: inglês → português) baixa outro modelo na primeira vez.
+            A chave fica só neste computador. Mudar o idioma da legenda é instantâneo.
+            Mudar o idioma que estão falando baixa o Whisper multilíngue na primeira vez.
           </p>
 
           <button

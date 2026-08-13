@@ -1,6 +1,6 @@
 # AGENTS.md
 
-WhisperBridge captura o áudio do Windows (WASAPI loopback ou microfone), transcreve inglês localmente com Whisper, traduz para português e mostra legendas num overlay always-on-top. A transcrição nunca sai da máquina. Comentários, docs e strings de UI são em português brasileiro — código novo segue o mesmo.
+WhisperBridge captura o áudio do Windows (WASAPI loopback ou microfone), transcreve localmente com Whisper e mostra legendas num overlay always-on-top. Sem IA a tradução local é só inglês → português; com Gemini/Claude/GPT o par de idiomas é o que a pessoa escolhe. A transcrição nunca sai da máquina. Comentários, docs e strings de UI são em português brasileiro — código novo segue o mesmo.
 
 ## Layout
 

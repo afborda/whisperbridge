@@ -195,10 +195,9 @@ def _find_loopback(p):
 #              o qual o projeto foi feito: legendar quem fala com você.
 # "mic"      = a sua própria voz.
 #
-# Atenção ao usar "mic": o Whisper aqui é medium.en / small.en, modelos SÓ de
-# inglês, e a tradução é EN->PT de mão única. Falar português no microfone não
-# produz legenda em português — produz lixo. O microfone só faz sentido se quem
-# fala nele estiver falando inglês.
+# O idioma da fala vem das Configurações. Inglês usa medium.en / small.en;
+# qualquer outro (ou "auto") troca para o Whisper multilíngue. A tradução local
+# continua só EN→PT; com IA o par é o que a pessoa escolheu.
 _audio_source = "loopback"
 _audio_device_index: int | None = None   # None = escolha automática dentro da fonte
 
@@ -387,7 +386,7 @@ def _process_segment_inner(seg: AudioSegment):
 
     # Com nuvem: NÃO roda MarianMT no caminho crítico. Ele gerava "gado" /
     # "oleoduto" na tela e a revisão ou não chegava ou piscava por cima.
-    # Mostra o inglês (provisório); o PT vem da nuvem. Local só se a nuvem falhar.
+    # Mostra o texto de origem; a tradução da IA entra depois. Local só se a nuvem falhar.
     use_cloud = _cloud is not None
     t_trans = time.time()
     local_pts: list[str] = [""] * len(chunks)

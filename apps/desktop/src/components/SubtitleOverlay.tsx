@@ -39,7 +39,7 @@ export function SubtitleOverlay({ history, livePartial }: Props) {
           textAlign: "center",
           letterSpacing: "0.02em",
         }}>
-          Aguardando fala em inglês...
+          Aguardando fala…
         </div>
       )}
 
