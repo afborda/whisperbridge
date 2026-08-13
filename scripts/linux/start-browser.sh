@@ -1,13 +1,14 @@
 #!/usr/bin/env bash
 # Abre o WhisperBridge no navegador. Ctrl+C encerra o engine.
 set -euo pipefail
-ROOT="$(cd "$(dirname "$0")" && pwd)"
+HERE="$(cd "$(dirname "$0")" && pwd)"
+ROOT="$(cd "$HERE/../.." && pwd)"
 VPY="$ROOT/.venv/bin/python"
 PORTA=37865
 URL="http://127.0.0.1:${PORTA}/"
 
-[[ -x "$VPY" ]] || { echo "  X   .venv nao encontrado. Rode:  ./doctor.sh --fix"; exit 1; }
-[[ -f "$ROOT/apps/desktop/dist/index.html" ]] || { echo "  X   Interface nao compilada. Rode:  ./setup.sh"; exit 1; }
+[[ -x "$VPY" ]] || { echo "  X   .venv nao encontrado. Rode:  ./install.sh"; exit 1; }
+[[ -f "$ROOT/apps/desktop/dist/index.html" ]] || { echo "  X   Interface nao compilada. Rode:  ./install.sh"; exit 1; }
 
 if command -v ss >/dev/null 2>&1 && ss -ltn | grep -q ":${PORTA} "; then
   echo "Ja existe um engine na porta $PORTA — abrindo o navegador nele."

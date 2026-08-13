@@ -47,9 +47,6 @@ user-settings.json
 user-settings.json.tmp
 bakeoff-result.json
 live-audit.json
-test_clean_translate.py
-test_quality_bakeoff.py
-test_live_audit.py
 
 # ── Artefatos de build ────────────────────────────────────────────────────────
 *.exe

@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # WhisperBridge doctor + instalador Linux.
-#   ./doctor.sh           so verifica
-#   ./doctor.sh --fix     instala o que falta (apt/dnf se root, depois setup.sh)
-#   ./doctor.sh --menu    menu interativo
+#   ./scripts/linux/doctor.sh           so verifica
+#   ./scripts/linux/doctor.sh --fix     instala o que falta
+#   ./scripts/linux/doctor.sh --menu    menu (install.sh na raiz)
 set -u
 
 FIX=0; MENU=0; CPU=0; OVERLAY=0; SPEAKERS=0
@@ -16,7 +16,8 @@ for a in "$@"; do
   esac
 done
 
-ROOT="$(cd "$(dirname "$0")" && pwd)"
+HERE="$(cd "$(dirname "$0")" && pwd)"
+ROOT="$(cd "$HERE/../.." && pwd)"
 VPY="$ROOT/.venv/bin/python"
 DIST="$ROOT/apps/desktop/dist/index.html"
 ENVF="$ROOT/.env"
@@ -43,7 +44,7 @@ if [[ $MENU -eq 1 ]]; then
     1) ;;
     2) FIX=1 ;;
     3) FIX=1; OVERLAY=1 ;;
-    4) exec "$ROOT/start-browser.sh" ;;
+    4) exec "$HERE/start-browser.sh" ;;
     *) exit 0 ;;
   esac
 fi
@@ -125,7 +126,7 @@ if [[ -x "$VPY" ]]; then
     CUDA=$(echo "$TV" | sed -n '2p')
     if [[ "$CUDA" == "True" ]]; then TORCH_CUDA=1; ok "PyTorch $VER_T com CUDA"
     else ok "PyTorch $VER_T (CPU)"
-      [[ -n "$GPU" ]] && AVISOS+=("Tem NVIDIA mas o torch e CPU. Rode: ./doctor.sh --fix")
+      [[ -n "$GPU" ]] && AVISOS+=("Tem NVIDIA mas o torch e CPU. Rode: ./install.sh")
     fi
   else
     aviso "PyTorch ainda nao instalado"
@@ -201,7 +202,7 @@ if [[ $FIX -eq 1 ]]; then
   [[ $OVERLAY -eq 1 ]] && ARGS+=(--overlay)
   [[ $SPEAKERS -eq 1 ]] && ARGS+=(--speakers)
   info "chamando setup.sh ${ARGS[*]} ..."
-  bash "$ROOT/setup.sh" "${ARGS[@]}"
+  bash "$HERE/setup.sh" "${ARGS[@]}"
 fi
 
 if ((${#AVISOS[@]})); then
@@ -212,10 +213,10 @@ fi
 titulo "Como iniciar"
 if [[ ! -x "$VPY" || ! -f "$DIST" ]] && [[ $FIX -eq 0 ]]; then
   echo "  Ainda falta instalar. Rode:"
-  echo "      ./doctor.sh --fix"
-  echo "  ou  ./install.sh"
+  echo "      ./install.sh"
+  echo "  ou  ./scripts/linux/doctor.sh --fix"
 else
-  echo "  1.  ./start-browser.sh     (navegador)"
+  echo "  1.  ./scripts/linux/start-browser.sh     (navegador)"
   echo "  2.  Na tela: Som do PC ou Microfone  ->  Iniciar"
   echo "  3.  Modo Recomendado (IA): Configuracoes, chave, idiomas"
   echo
@@ -223,7 +224,7 @@ else
 fi
 echo
 if [[ $FIX -eq 0 && ${#FALTAS[@]} -gt 0 ]]; then
-  echo "  Proximo passo:  ./doctor.sh --fix"
+  echo "  Proximo passo:  ./install.sh"
   echo
 fi
 exit 0

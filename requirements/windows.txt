@@ -1,7 +1,8 @@
 # WhisperBridge — dependências diretas.
 #
-# NÃO rode "pip install -r requirements.txt" direto.
-# Windows: .\setup.ps1     Linux: ./setup.sh  (usa requirements-linux.txt)
+# NÃO rode "pip install -r" neste arquivo direto.
+# Windows: .\scripts\windows\setup.ps1
+# Linux:   ./scripts/linux/setup.sh  (usa requirements/linux.txt)
 #
 # Motivo concreto, verificado na prática: o PyTorch fica de fora deste arquivo
 # porque a build CUDA (2.5.1+cu121) só existe no índice do PyTorch. O pip lê o
@@ -11,7 +12,7 @@
 # torch.cuda.is_available() virar False e os perfis de GPU aparecerem
 # bloqueados, como se a máquina não tivesse placa.
 #
-# O setup.ps1 evita isso instalando o torch primeiro e passando um arquivo de
+# O setup evita isso instalando o torch primeiro e passando um arquivo de
 # --constraint que impede o pip de mexer nele depois.
 #
 # As versões estão fixadas porque este conjunto é frágil: o torch 2.5.1 é o
@@ -45,7 +46,7 @@ scikit-learn==1.9.0      # re-clusterização das galerias de embedding
 # resolvedor do pip se recusa a montá-la — deixá-lo neste arquivo fazia a
 # instalação inteira falhar com "conflicting dependencies".
 #
-# Então ele virou opcional:  .\setup.ps1 -Speakers
+# Então ele virou opcional:  .\scripts\windows\setup.ps1 -Speakers
 #
 # Sem ele o app roda normal; só perde o "Pessoa 1 / Pessoa 2" e cai na
 # heurística de pausa do useTranslationSocket. Também precisa de HF_TOKEN.

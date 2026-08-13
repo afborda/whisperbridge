@@ -1,6 +1,6 @@
-# WhisperBridge — Linux. Use ./setup.sh (nao pip isolado: o torch entra antes).
+# WhisperBridge — Linux. Use ./scripts/linux/setup.sh (nao pip isolado: o torch entra antes).
 #
-# No Windows continue usando requirements.txt + setup.ps1 (PyAudioWPatch).
+# No Windows: requirements/windows.txt + scripts/windows/setup.ps1 (PyAudioWPatch).
 
 fastapi==0.141.1
 uvicorn==0.52.1

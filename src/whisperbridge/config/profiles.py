@@ -109,7 +109,7 @@ def _cloud_backend_from_env() -> str:
 
 def resolve(profile_id: str | None = None) -> Profile:
     """Resolve o perfil pedido, aplicando o provedor de nuvem e o idioma de entrada."""
-    from shared.user_settings import get as get_settings, whisper_model_for
+    from .settings import get as get_settings, whisper_model_for
 
     pid = (profile_id or os.getenv("PROFILE") or DEFAULT_PROFILE).strip().lower()
     profile = PROFILES.get(pid) or PROFILES[DEFAULT_PROFILE]
@@ -133,7 +133,7 @@ def has_cuda() -> bool:
 
 
 def has_cloud_key(backend: str) -> bool:
-    from shared.user_settings import get as get_settings
+    from .settings import get as get_settings
 
     s = get_settings()
     if backend == GEMINI:

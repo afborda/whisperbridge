@@ -49,11 +49,11 @@ Traduz o que está tocando no computador (Teams, Meet, Zoom, YouTube) ou o que e
 **Linux** — no terminal:
 
 ```bash
-chmod +x doctor.sh setup.sh start-browser.sh install.sh stop-whisperbridge.sh
+chmod +x install.sh scripts/linux/*.sh
 ./install.sh          # menu
 # ou
-./doctor.sh           # só verifica
-./doctor.sh --fix     # instala o que falta
+./scripts/linux/doctor.sh           # só verifica
+./scripts/linux/doctor.sh --fix     # instala o que falta
 ```
 
 Ubuntu/Debian, se o PyAudio falhar:
@@ -67,7 +67,7 @@ No Linux, **Som do PC** usa o *monitor* do PulseAudio/PipeWire (`Monitor of …`
 Ele pergunta o que fazer:
 
 1. **Só verificar este PC** — doctor: RAM, GPU, Python, Node, o que falta, **quais modos você consegue usar**
-2. **Instalar o que falta** (recomendado) — tenta Python/Node pelo `winget` e roda o `setup.ps1`
+2. **Instalar o que falta** (recomendado) — tenta Python/Node pelo `winget` e roda o setup
 3. **Instalar + janela flutuante** — precisa de Rust
 4. **Abrir o WhisperBridge agora**
 
@@ -76,31 +76,26 @@ Pelo terminal:
 ```powershell
 git clone https://github.com/afborda/whisperbridge.git
 cd whisperbridge
-.\Doctor.ps1            # só diagnóstico
-.\Doctor.ps1 -Fix       # instala o que falta
-.\Doctor.bat            # mesmo diagnóstico, com pause no final
+.\Instalar.bat                              # menu (duplo clique também)
+.\scripts\windows\doctor.ps1                # só diagnóstico
+.\scripts\windows\doctor.ps1 -Fix           # instala o que falta
 ```
 
-O `setup.ps1` (chamado pelo `-Fix`) cria o `.venv`, instala o PyTorch certo, compila a UI e gera o `.env`. É seguro rodar de novo.
+O instalador cria o `.venv`, instala o PyTorch certo, compila a UI e gera o `.env`. É seguro rodar de novo.
 
 ```powershell
-.\setup.ps1 -Cpu         # força CPU
-.\setup.ps1 -Speakers    # + Pessoa 1 / Pessoa 2 (precisa de HF_TOKEN)
-.\setup.ps1 -Overlay     # + janela flutuante (precisa de Rust, ~10 min)
+.\scripts\windows\setup.ps1 -Cpu         # força CPU
+.\scripts\windows\setup.ps1 -Speakers    # + Pessoa 1 / Pessoa 2 (precisa de HF_TOKEN)
+.\scripts\windows\setup.ps1 -Overlay     # + janela flutuante (precisa de Rust, ~10 min)
 ```
 
 ## Usar
 
-**Mais simples (sem Rust):**
+**Janela flutuante** (depois do overlay) ou **navegador**:
 
 ```powershell
-.\Start-Browser.ps1
-```
-
-**Janela flutuante** (depois do `-Overlay`):
-
-```powershell
-.\WhisperBridge.bat
+.\WhisperBridge.bat                          # overlay (ou navegador, se o exe não existir)
+.\scripts\windows\start-browser.ps1          # só navegador
 ```
 
 1. Toque uma reunião ou vídeo **em inglês** (ou fale no microfone).
@@ -110,7 +105,7 @@ O `setup.ps1` (chamado pelo `-Fix`) cria o `.venv`, instala o PyTorch certo, com
 
 Não feche com **✕** se quiser deixar o servidor rodando — use **minimizar**. O ✕ desliga o motor de propósito (libera a memória da placa).
 
-Para matar um processo preso: `.\Stop-WhisperBridge.ps1`
+Para matar um processo preso: `.\scripts\windows\stop.ps1`
 
 ## Modos
 
@@ -145,11 +140,15 @@ A chave fica só na sua máquina (`user-settings.json` e `.env` — não vão pa
 
 ```
 whisperbridge/
-├── setup.ps1 / Start-Browser.ps1 / WhisperBridge.bat
-├── run_server.py              motor (FastAPI + Whisper + tradução)
-├── services/speech_engine/    captura, VAD, Whisper, tradutor
-├── apps/desktop/              React + Tauri (overlay)
-└── assets/brand/              ícone
+├── Instalar.bat / WhisperBridge.bat / install.sh   atalhos da raiz
+├── run_server.py                                   python -m whisperbridge
+├── src/whisperbridge/                              motor (áudio, VAD, Whisper, tradução)
+│   ├── server.py                                   FastAPI + WebSocket
+│   └── config/                                     portas, perfis, preferências
+├── scripts/windows/  scripts/linux/                doctor, setup, launcher
+├── requirements/                                   windows.txt · linux.txt
+├── apps/desktop/                                   React + Tauri (overlay)
+└── assets/                                         ícone e imagens do README
 ```
 
 ---
@@ -183,12 +182,12 @@ Live subtitles for English meetings on Windows. Captures **system audio** (Teams
 **Linux:**
 
 ```bash
-chmod +x doctor.sh setup.sh start-browser.sh install.sh stop-whisperbridge.sh
+chmod +x install.sh scripts/linux/*.sh
 ./install.sh
 # or
-./doctor.sh           # check only
-./doctor.sh --fix     # install missing pieces
-./start-browser.sh    # run
+./scripts/linux/doctor.sh           # check only
+./scripts/linux/doctor.sh --fix     # install missing pieces
+./scripts/linux/start-browser.sh    # run
 ```
 
 If PyAudio fails on Ubuntu/Debian:
@@ -202,7 +201,7 @@ On Linux, **PC sound** uses the PulseAudio/PipeWire *monitor* device. Microphone
 Menu:
 
 1. **Check this PC only** — doctor: RAM, GPU, Python, Node, what’s missing, **which modes you can use**
-2. **Install what’s missing** (recommended) — tries Python/Node via `winget`, then `setup.ps1`
+2. **Install what’s missing** (recommended) — tries Python/Node via `winget`, then runs setup
 3. **Install + floating window** — needs Rust
 4. **Open WhisperBridge now**
 
@@ -211,30 +210,24 @@ From a terminal:
 ```powershell
 git clone https://github.com/afborda/whisperbridge.git
 cd whisperbridge
-.\Doctor.ps1            # diagnose only
-.\Doctor.ps1 -Fix       # install missing pieces
+.\Instalar.bat                              # menu (double-click also works)
+.\scripts\windows\doctor.ps1                # diagnose only
+.\scripts\windows\doctor.ps1 -Fix           # install missing pieces
 ```
 
-`setup.ps1` (run by `-Fix`) creates the venv, installs the right PyTorch, builds the UI, and writes `.env`. Safe to re-run.
+The installer creates the venv, installs the right PyTorch, builds the UI, and writes `.env`. Safe to re-run.
 
 ```powershell
-.\setup.ps1 -Cpu         # force CPU
-.\setup.ps1 -Speakers    # + speaker labels (needs HF_TOKEN)
-.\setup.ps1 -Overlay     # + floating window (needs Rust, ~10 min)
+.\scripts\windows\setup.ps1 -Cpu         # force CPU
+.\scripts\windows\setup.ps1 -Speakers    # + speaker labels (needs HF_TOKEN)
+.\scripts\windows\setup.ps1 -Overlay     # + floating window (needs Rust, ~10 min)
 ```
 
 ## Run
 
-**Easiest (no Rust):**
-
 ```powershell
-.\Start-Browser.ps1
-```
-
-**Floating overlay** (after `-Overlay`):
-
-```powershell
-.\WhisperBridge.bat
+.\WhisperBridge.bat                          # overlay (or browser if the exe is missing)
+.\scripts\windows\start-browser.ps1          # browser only
 ```
 
 1. Play an **English** meeting or video (or speak into the mic).
@@ -244,7 +237,7 @@ cd whisperbridge
 
 Don’t use **✕** if you want the engine to keep running — **minimize** instead. ✕ shuts the engine down on purpose (frees GPU memory).
 
-Stuck process: `.\Stop-WhisperBridge.ps1`
+Stuck process: `.\scripts\windows\stop.ps1`
 
 ## Modes
 

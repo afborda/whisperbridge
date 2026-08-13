@@ -30,7 +30,8 @@ _VALID_BACKEND = {"gemini", "openai-compat"}
 
 
 def _root() -> str:
-    return os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+    # src/whisperbridge/config/settings.py -> raiz do repo
+    return os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
 
 
 def _path() -> str:

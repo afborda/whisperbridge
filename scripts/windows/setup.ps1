@@ -3,9 +3,9 @@
 # Objetivo: sair do "git clone" para legenda na tela sem a pessoa precisar saber
 # nada sobre torch, CUDA ou Tauri.
 #
-#   .\setup.ps1              detecta a máquina e instala o que der
-#   .\setup.ps1 -Cpu         força CPU mesmo tendo placa NVIDIA
-#   .\setup.ps1 -Overlay     também compila a janela flutuante (precisa de Rust)
+#   .\scripts\windows\setup.ps1              detecta a máquina e instala o que der
+#   .\scripts\windows\setup.ps1 -Cpu         força CPU mesmo tendo placa NVIDIA
+#   .\scripts\windows\setup.ps1 -Overlay     também compila a janela flutuante (precisa de Rust)
 #
 # É seguro rodar de novo: cada etapa detecta o que já está pronto e pula.
 
@@ -16,7 +16,8 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
-$root = if ($PSScriptRoot) { $PSScriptRoot } else { (Get-Location).Path }
+$here = if ($PSScriptRoot) { $PSScriptRoot } else { Split-Path -Parent $MyInvocation.MyCommand.Path }
+$root = (Resolve-Path (Join-Path $here "..\..")).Path
 $venv = Join-Path $root ".venv"
 $vpy = Join-Path $venv "Scripts\python.exe"
 $desktop = Join-Path $root "apps\desktop"
@@ -118,8 +119,8 @@ open(r'$pins', 'w').write('\n'.join(linhas) + '\n')
 if ($LASTEXITCODE -ne 0) { Morre "Nao consegui descobrir a versao do torch instalada." }
 Info "travando: $((Get-Content $pins) -join ', ')"
 
-& $vpy -m pip install -r (Join-Path $root "requirements.txt") --constraint $pins --disable-pip-version-check
-if ($LASTEXITCODE -ne 0) { Morre "Falhou instalando as dependencias de requirements.txt." }
+& $vpy -m pip install -r (Join-Path $root "requirements\windows.txt") --constraint $pins --disable-pip-version-check
+if ($LASTEXITCODE -ne 0) { Morre "Falhou instalando as dependencias de requirements\\windows.txt." }
 # Identificacao de falantes: opcional e instalada a parte porque o pyannote 4.0.7
 # pede torch>=2.8 enquanto o projeto roda em 2.5.1. --no-deps aplica so ao
 # pyannote (que e quem mente sobre o torch); as dependencias dele entram pelo
@@ -211,10 +212,10 @@ if (-not $npm) {
 Write-Host "`n=== Perfis que vao estar disponiveis ===" -ForegroundColor White
 $resumo = & $vpy -c @"
 import os, sys
-sys.path.insert(0, r'$root')
+sys.path.insert(0, r'$root\src')
 from dotenv import load_dotenv
 load_dotenv(os.path.join(r'$root', '.env'))
-import shared.profiles as p
+from whisperbridge.config import profiles as p
 for d in p.list_profiles():
     marca = 'sim' if d['available'] else 'NAO'
     motivo = '' if d['available'] else '  (' + d['unavailable_reason'] + ')'
@@ -224,7 +225,7 @@ if ($LASTEXITCODE -eq 0) { $resumo | ForEach-Object { Write-Host $_ } }
 else { Aviso "Nao consegui listar os perfis." }
 if (-not $Speakers) {
     Info ""
-    Info "Falantes ('Pessoa 1 / Pessoa 2') desativados. Para ligar: .\setup.ps1 -Speakers"
+    Info "Falantes ('Pessoa 1 / Pessoa 2') desativados. Para ligar: .\\scripts\\windows\\setup.ps1 -Speakers"
 }
 
 if ($avisos.Count -gt 0) {
@@ -236,5 +237,5 @@ Write-Host "`n=== Pronto. Para usar ===" -ForegroundColor Green
 if (Test-Path (Join-Path $root "WhisperBridge-UI.exe")) {
     Write-Host "  .\WhisperBridge.bat            janela flutuante" -ForegroundColor White
 }
-Write-Host "  .\Start-Browser.ps1            abre no navegador (nao precisa de Rust)" -ForegroundColor White
+Write-Host "  .\scripts\windows\start-browser.ps1   abre no navegador (nao precisa de Rust)" -ForegroundColor White
 Write-Host "`n  Toque audio em ingles no PC e clique em Iniciar.`n" -ForegroundColor DarkGray

@@ -8,17 +8,18 @@
 # Ctrl+C encerra o engine.
 
 $ErrorActionPreference = "Stop"
-$root = if ($PSScriptRoot) { $PSScriptRoot } else { (Get-Location).Path }
+$here = if ($PSScriptRoot) { $PSScriptRoot } else { Split-Path -Parent $MyInvocation.MyCommand.Path }
+$root = (Resolve-Path (Join-Path $here "..\..")).Path
 $vpy = Join-Path $root ".venv\Scripts\python.exe"
 $porta = 37865
 $url = "http://127.0.0.1:$porta/"
 
 if (-not (Test-Path $vpy)) {
-    Write-Host "`n  X   .venv nao encontrado. Rode primeiro:  .\setup.ps1`n" -ForegroundColor Red
+    Write-Host "`n  X   .venv nao encontrado. Rode primeiro:  .\Instalar.bat`n" -ForegroundColor Red
     exit 1
 }
 if (-not (Test-Path (Join-Path $root "apps\desktop\dist\index.html"))) {
-    Write-Host "`n  X   A interface nao foi compilada. Rode:  .\setup.ps1`n" -ForegroundColor Red
+    Write-Host "`n  X   A interface nao foi compilada. Rode:  .\Instalar.bat`n" -ForegroundColor Red
     exit 1
 }
 

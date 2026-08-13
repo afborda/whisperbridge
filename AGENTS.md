@@ -2,33 +2,45 @@
 
 WhisperBridge captura o áudio do Windows (WASAPI loopback ou microfone), transcreve inglês localmente com Whisper, traduz para português e mostra legendas num overlay always-on-top. A transcrição nunca sai da máquina. Comentários, docs e strings de UI são em português brasileiro — código novo segue o mesmo.
 
+## Layout
+
+```
+src/whisperbridge/     pacote Python (server, audio, vad, transcription, translation, config)
+scripts/windows|linux/ doctor, setup, launcher, stop
+apps/desktop/          React + Tauri
+requirements/          windows.txt · linux.txt
+```
+
+Na raiz só ficam atalhos (`Instalar.bat`, `WhisperBridge.bat`, `install.sh`) e `run_server.py`.
+
 ## Comandos
 
 Não existe linter nem test runner. Sempre use o interpretador do `.venv`. Python suportado: **3.10–3.12** (torch 2.5.1 não tem wheel para 3.13).
 
-`requirements.txt` existe, mas **não rode `pip install -r requirements.txt`**. O PyTorch CUDA fica de fora de propósito: o pip trata `+cu121` como versão local, desinstala a build CUDA e põe a CPU no lugar, sem erro. Use o instalador:
+`requirements/windows.txt` existe, mas **não rode `pip install -r` nele direto**. O PyTorch CUDA fica de fora de propósito: o pip trata `+cu121` como versão local, desinstala a build CUDA e põe a CPU no lugar, sem erro. Use o instalador:
 
 ```powershell
-.\setup.ps1                 # detecta a máquina; cria .venv, instala torch, builda a UI
-.\setup.ps1 -Cpu            # ignora a GPU
-.\setup.ps1 -Speakers       # + pyannote (opcional; pip recusa por conflito de torch)
-.\setup.ps1 -Overlay        # + janela Tauri (precisa de Rust, ~10 min)
+.\scripts\windows\setup.ps1                 # detecta a máquina; cria .venv, instala torch, builda a UI
+.\scripts\windows\setup.ps1 -Cpu            # ignora a GPU
+.\scripts\windows\setup.ps1 -Speakers       # + pyannote (opcional; pip recusa por conflito de torch)
+.\scripts\windows\setup.ps1 -Overlay        # + janela Tauri (precisa de Rust, ~10 min)
 ```
 
 ```powershell
 # Engine (FastAPI + modelos + UI estática) — 127.0.0.1:37865
 .venv\Scripts\python.exe -u run_server.py
+# equivalente: .venv\Scripts\python.exe -m whisperbridge
 
 # App completo (engine + overlay)
 .\WhisperBridge.bat              # ou duplo clique em WhisperBridge.vbs
 .\WhisperBridge.bat -console     # console + log
-.\WhisperBridge.ps1 -Dev         # engine + `npm run tauri dev`
+.\WhisperBridge.bat -Dev         # engine + `npm run tauri dev`
 
 # Sem Rust: mesma UI numa aba do navegador
-.\Start-Browser.ps1
+.\scripts\windows\start-browser.ps1
 
 # Mata engine/UI presos (libera a porta 37865)
-.\Stop-WhisperBridge.ps1
+.\scripts\windows\stop.ps1
 
 # Frontend
 cd apps\desktop
@@ -36,7 +48,7 @@ npm run build                    # tsc + vite → apps/desktop/dist  (OBRIGATÓR
 npm run tauri build              # exe em src-tauri/target/release/desktop.exe
 
 # Copia o exe para a raiz como WhisperBridge-UI.exe e recria o atalho
-.\install-desktop-shortcut.ps1
+.\scripts\windows\install-shortcut.ps1
 ```
 
 Log do launcher: `%TEMP%\WhisperBridge-launch.log`.
@@ -45,10 +57,10 @@ Log do launcher: `%TEMP%\WhisperBridge-launch.log`.
 
 ### Dois processos
 
-Coordenados por `WhisperBridge.ps1`:
+Coordenados por `scripts/windows/launcher.ps1`:
 
-1. **Engine** (`run_server.py` → `services/speech_engine/websocket/server.py`) — FastAPI em `127.0.0.1:37865`. Serve `/health`, `/profiles`, `/debug`, `/ws` e o React buildado em `/` via `StaticFiles`.
-2. **UI** — shell Tauri frameless always-on-top cujo único trabalho é apontar o WebView para a URL do engine. O Rust em `lib.rs` quase não tem lógica. Sem Rust, `Start-Browser.ps1` abre a mesma UI no navegador.
+1. **Engine** (`run_server.py` → `src/whisperbridge/server.py`) — FastAPI em `127.0.0.1:37865`. Serve `/health`, `/profiles`, `/debug`, `/ws` e o React buildado em `/` via `StaticFiles`.
+2. **UI** — shell Tauri frameless always-on-top cujo único trabalho é apontar o WebView para a URL do engine. O Rust em `lib.rs` quase não tem lógica. Sem Rust, `scripts/windows/start-browser.ps1` abre a mesma UI no navegador.
 
 O launcher sobe o engine, espera `/health` responder `loading` ou `ok` (não espera os modelos), e abre a UI. Fechar a janela mata o engine.
 
@@ -65,7 +77,7 @@ Componentes em `apps/desktop/src/components/`: `TitleBar` (controles, perfil, á
 
 ### Perfis de execução
 
-`shared/profiles.py` define quatro perfis. O que importa é **o que sobe na memória**, não só onde traduz. Quem come a GPU é o Whisper (~2.3 GB via CTranslate2); o tradutor é 0.44 GB. Mandar só a tradução para a nuvem **não** libera a placa — os perfis leves movem o Whisper para CPU (`small.en` + `int8`).
+`src/whisperbridge/config/profiles.py` define quatro perfis. O que importa é **o que sobe na memória**, não só onde traduz. Quem come a GPU é o Whisper (~2.3 GB via CTranslate2); o tradutor é 0.44 GB. Mandar só a tradução para a nuvem **não** libera a placa — os perfis leves movem o Whisper para CPU (`small.en` + `int8`).
 
 | id | Whisper | Tradução | Precisa |
 |---|---|---|---|
@@ -120,7 +132,7 @@ asyncio                 _broadcaster()      drena a queue, espalha para os /ws
 
 O executor de 1 worker é a garantia de ordem das legendas; subir `max_workers` reordena linhas. **Toda entrega entre threads passa por `_emit()`**, que envolve `loop.call_soon_threadsafe` — `asyncio.Queue` não é thread-safe. Nunca chame `_broadcast_queue.put_nowait` direto da captura ou do worker, e nunca `await ws.send` de nenhuma das duas.
 
-Comprimento de segmento é botão de **legibilidade**, não só de latência: Whisper alucina em fragmento truncado, MarianMT produz lixo em oração sem sujeito, embedding do wespeaker é ruído abaixo de ~1.5 s. Os três degradam juntos. `SILENCE_FLUSH_S` / `MAX_SEGMENT_S` / `MIN_SEGMENT_S` (`vad/buffer.py`), `CHUNK`, `MAX_WORDS_PER_CHUNK`, `PARTIAL_INTERVAL` (0.9 s), `PARTIAL_MIN_CHUNKS` (8) (`websocket/server.py`) e `beam_size`/`best_of` (`transcription/whisper_engine.py`) foram afinados uns contra os outros. Cada um tem um comentário do que o valor anterior quebrou — leia antes de mudar.
+Comprimento de segmento é botão de **legibilidade**, não só de latência: Whisper alucina em fragmento truncado, MarianMT produz lixo em oração sem sujeito, embedding do wespeaker é ruído abaixo de ~1.5 s. Os três degradam juntos. `SILENCE_FLUSH_S` / `MAX_SEGMENT_S` / `MIN_SEGMENT_S` (`src/whisperbridge/vad/buffer.py`), `CHUNK`, `MAX_WORDS_PER_CHUNK`, `PARTIAL_INTERVAL` (0.9 s), `PARTIAL_MIN_CHUNKS` (8) (`src/whisperbridge/server.py`) e `beam_size`/`best_of` (`src/whisperbridge/transcription/whisper_engine.py`) foram afinados uns contra os outros. Cada um tem um comentário do que o valor anterior quebrou — leia antes de mudar.
 
 `_split_chunks` devolve **uma frase por chunk**. MarianMT é sentence-level: duas frases numa entrada e ele traduz uma e descarta a outra. 24 palavras é válvula de segurança para monólogo sem pontuação, não o tamanho alvo da linha.
 
@@ -136,7 +148,7 @@ Whisper aqui é `medium.en` / `small.en` e a tradução é EN→PT de mão únic
 
 `vad/speaker_tracker.py` faz **speaker ID online, não diarização**. Por pessoa: galeria rolante de embeddings pyannote/wespeaker + centróide. Decisão com histerese em similaridade cosseno (maior = mesma voz): `>= SAME_SPEAKER_SIM` (0.58) atribui e aprende; `< NEW_SPEAKER_SIM` (0.42) com áudio forte (`STRONG_AUDIO_S` 2.5 s) cria pessoa nova; a faixa do meio atribui sem aprender. Segmento curto (`< MIN_AUDIO_S` 0.9 s) ou quieto herda `_last_id`. A cada `RECLUSTER_EVERY` embeddings aprendidos, reagrupa fantasmas (sklearn agglomerative, fallback pairwise).
 
-`pyannote.audio` **não** está em `requirements.txt`: declara `torch>=2.8` e o pip recusa, embora funcione na prática com 2.5.1. Instala só com `.\setup.ps1 -Speakers`.
+`pyannote.audio` **não** está em `requirements/windows.txt`: declara `torch>=2.8` e o pip recusa, embora funcione na prática com 2.5.1. Instala só com `.\scripts\windows\setup.ps1 -Speakers`.
 
 Precisa de `HF_TOKEN` no `.env` da raiz (gitignore, carregado por `server.py`). Sem token ou sem pyannote o engine roda; `speakerId`/`speakerColor` chegam `null` e o frontend cai na heurística de pausa (> 2.5 s) em `useTranslationSocket`.
 
@@ -154,11 +166,11 @@ Dois tipos de `subtitle`: `status: "partial"` sempre com `id: "live"` e texto s�
 
 ### Portas — quatro lugares
 
-`shared/ports.py` (37865 / 14287) é a fonte da verdade, espelhada em `apps/desktop/src/config.ts`, `tauri.conf.json` (`app.windows[0].url` e `build.devUrl`) e `apps/desktop/vite.config.ts`. Mudar porta é editar os quatro.
+`src/whisperbridge/config/ports.py` (37865 / 14287) é a fonte da verdade, espelhada em `apps/desktop/src/config.ts`, `tauri.conf.json` (`app.windows[0].url` e `build.devUrl`) e `apps/desktop/vite.config.ts`. Mudar porta é editar os quatro.
 
 ### Tradução local
 
-`Translator.translate_batch` manda todos os chunks do segmento num único `model.generate` — custo aproximadamente flat no número de chunks. Depois: `to_ptbr()` e só então `apply_glossary()`. A ordem importa: o glossário restaura termos técnicos que não podem ser reescritos. Vocabulário de domínio entra em `translation/glossary.py`.
+`Translator.translate_batch` manda todos os chunks do segmento num único `model.generate` — custo aproximadamente flat no número de chunks. Depois: `to_ptbr()` e só então `apply_glossary()`. A ordem importa: o glossário restaura termos técnicos que não podem ser reescritos. Vocabulário de domínio entra em `src/whisperbridge/translation/glossary.py`.
 
 **O modelo de tradução foi avaliado e mantido de propósito.** `opus-mt-tc-big-en-pt` puxa para pt-PT; `unicamp-dl/translation-en-pt-t5` foi comparado em frases reais capturadas:
 
@@ -202,6 +214,6 @@ Nada disso é obrigatório para o perfil `gpu` / `leve-offline`.
 - Comentários e strings de UI em pt-BR.
 - Não suba o torch além de 2.5.1 — teto do CTranslate2 e do pyannote.
 - Não adicione SDK oficial de LLM. `httpx` cru é a regra.
-- Não introduza package manager Python paralelo (`pyproject.toml` / Poetry) sem atualizar o `setup.ps1`.
+- `pyproject.toml` só declara o pacote `src/whisperbridge`. Instalação continua pelos scripts + `requirements/` — não use Poetry/`pip install .` no lugar do setup.
 - Constantes afinadas têm comentário do valor anterior que quebrou — leia antes de retocar.
-- `index.md` e `00-`…`11-*.md` na raiz são o diário de construção. Eles (e partes do `README.md`) **já divergiram** do código. Fonte da verdade: os arquivos-fonte, não o diário. Constantes, tamanho de janela e lista de componentes estão aqui e no código, não no README.
+- Fonte da verdade: os arquivos-fonte. Constantes, tamanho de janela e lista de componentes estão aqui e no código.

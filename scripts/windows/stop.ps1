@@ -1,5 +1,5 @@
 # Encerra qualquer WhisperBridge preso (servidor + UI).
-# Porta do engine: 37865 (ver shared/ports.py)
+# Porta do engine: 37865 (ver src/whisperbridge/config/ports.py)
 
 $EnginePort = 37865
 

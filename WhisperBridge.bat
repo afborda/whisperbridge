@@ -2,7 +2,12 @@
 REM Launcher visivel so para debug. Uso normal: WhisperBridge.vbs (sem terminal)
 cd /d "%~dp0"
 if /I "%~1"=="-console" (
-  powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File "%~dp0WhisperBridge.ps1" -ShowConsole
+  powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File "%~dp0scripts\windows\launcher.ps1" -ShowConsole
+  if errorlevel 1 pause
+  exit /b %errorlevel%
+)
+if /I "%~1"=="-Dev" (
+  powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File "%~dp0scripts\windows\launcher.ps1" -Dev -ShowConsole
   if errorlevel 1 pause
   exit /b %errorlevel%
 )

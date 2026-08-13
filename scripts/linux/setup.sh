@@ -16,7 +16,8 @@ for a in "$@"; do
   esac
 done
 
-ROOT="$(cd "$(dirname "$0")" && pwd)"
+HERE="$(cd "$(dirname "$0")" && pwd)"
+ROOT="$(cd "$HERE/../.." && pwd)"
 VENV="$ROOT/.venv"
 VPY="$VENV/bin/python"
 DESKTOP="$ROOT/apps/desktop"
@@ -100,8 +101,8 @@ for n in ('torch','torchaudio','torchvision'):
 open(r'$PINS','w').write('\\n'.join(linhas)+'\\n')
 "
 info "travando: $(tr '\n' ' ' < "$PINS")"
-"$VPY" -m pip install -r "$ROOT/requirements-linux.txt" --constraint "$PINS" --disable-pip-version-check \
-  || morre "pip install requirements-linux.txt falhou. Falta portaudio19-dev?"
+"$VPY" -m pip install -r "$ROOT/requirements/linux.txt" --constraint "$PINS" --disable-pip-version-check \
+  || morre "pip install requirements/linux.txt falhou. Falta portaudio19-dev?"
 if [[ $SPEAKERS -eq 1 ]]; then
   info "instalando pyannote (falantes)..."
   "$VPY" -m pip install "pyannote.audio==4.0.7" --no-deps --constraint "$PINS" --disable-pip-version-check \
@@ -147,7 +148,7 @@ fi
 
 echo
 echo "=== Pronto. Para usar ==="
-echo "  ./start-browser.sh"
+echo "  ./scripts/linux/start-browser.sh"
 echo "  Toque audio em ingles e clique em Iniciar."
 echo
 if ((${#AVISOS[@]})); then

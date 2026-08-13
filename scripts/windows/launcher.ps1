@@ -10,7 +10,8 @@ param(
 )
 
 $ErrorActionPreference = "Continue"
-$root = if ($PSScriptRoot) { $PSScriptRoot } else { Split-Path -Parent $MyInvocation.MyCommand.Path }
+$here = if ($PSScriptRoot) { $PSScriptRoot } else { Split-Path -Parent $MyInvocation.MyCommand.Path }
+$root = (Resolve-Path (Join-Path $here "..\..")).Path
 $python = Join-Path $root ".venv\Scripts\python.exe"
 $server = Join-Path $root "run_server.py"
 $desktopDir = Join-Path $root "apps\desktop"

@@ -1,8 +1,8 @@
 # WhisperBridge - doctor + instalador.
 #
-#   .\Doctor.ps1           só verifica (não instala nada)
-#   .\Doctor.ps1 -Fix      instala o que falta (Python/Node via winget, depois setup.ps1)
-#   .\Doctor.ps1 -Menu     menu para quem deu duplo clique no Instalar.bat
+#   .\scripts\windows\doctor.ps1           só verifica (não instala nada)
+#   .\scripts\windows\doctor.ps1 -Fix      instala o que falta
+#   .\scripts\windows\doctor.ps1 -Menu     menu (Instalar.bat na raiz)
 #
 # Mostra o que a máquina aguenta (os 4 modos) e como abrir o app.
 
@@ -15,7 +15,8 @@ param(
 )
 
 $ErrorActionPreference = "Continue"
-$root = if ($PSScriptRoot) { $PSScriptRoot } else { (Get-Location).Path }
+$here = if ($PSScriptRoot) { $PSScriptRoot } else { Split-Path -Parent $MyInvocation.MyCommand.Path }
+$root = (Resolve-Path (Join-Path $here "..\..")).Path
 $venv = Join-Path $root ".venv"
 $vpy  = Join-Path $venv "Scripts\python.exe"
 $dist = Join-Path $root "apps\desktop\dist\index.html"
@@ -69,8 +70,8 @@ if ($Menu) {
         "2" { $Fix = $true }
         "3" { $Fix = $true; $Overlay = $true }
         "4" {
-            $start = Join-Path $root "Start-Browser.ps1"
-            if (Test-Path $start) { & $start } else { Falha "Start-Browser.ps1 nao encontrado." }
+            $start = Join-Path $here "start-browser.ps1"
+            if (Test-Path $start) { & $start } else { Falha "start-browser.ps1 nao encontrado." }
             exit $LASTEXITCODE
         }
         default { exit 0 }
@@ -154,7 +155,7 @@ if (Test-Path $vpy) {
         $cuda = $linhas[1]
         $torchCuda = ($cuda -eq "True")
         if ($torchCuda) { Ok ("PyTorch {0} com CUDA" -f $verT) }
-        else { Ok ("PyTorch {0} (CPU)" -f $verT); if ($gpuNome) { [void]$avisos.Add("Tem placa NVIDIA mas o torch e CPU. Rode: .\Doctor.ps1 -Fix") } }
+        else { Ok ("PyTorch {0} (CPU)" -f $verT); if ($gpuNome) { [void]$avisos.Add("Tem placa NVIDIA mas o torch e CPU. Rode: .\Instalar.bat") } }
     } else {
         Aviso "PyTorch ainda nao instalado no .venv"
         [void]$faltas.Add("torch")
@@ -193,7 +194,7 @@ else { Info "Sem HF_TOKEN - o app roda, mas nao separa Pessoa 1 / Pessoa 2" }
 
 $overlay = Test-Path (Join-Path $root "WhisperBridge-UI.exe")
 if ($overlay) { Ok "Janela flutuante (WhisperBridge-UI.exe)" }
-else { Info "Sem overlay compilado - use o navegador (Start-Browser.ps1)" }
+else { Info "Sem overlay compilado - use o navegador (scripts\\windows\\start-browser.ps1)" }
 
 # ── niveis ───────────────────────────────────────────────────────────────────
 Titulo "4. O que ESTE PC consegue usar"
@@ -231,7 +232,7 @@ if ($Fix) {
 
     if ($faltas -contains "python" -or $faltas -contains "python-versao") {
         if (Try-WingetInstall "Python.Python.3.12" "Python 3.12") {
-            Ok "Python instalado. FECHE este terminal, abra outro e rode .\Doctor.ps1 -Fix de novo (o PATH so atualiza em janela nova)."
+            Ok "Python instalado. FECHE este terminal, abra outro e rode .\Instalar.bat de novo (o PATH so atualiza em janela nova)."
             Write-Host ""
             exit 0
         } else {
@@ -240,7 +241,7 @@ if ($Fix) {
     }
     if ($faltas -contains "node") {
         if (Try-WingetInstall "OpenJS.NodeJS.LTS" "Node.js LTS") {
-            Ok "Node instalado. FECHE este terminal, abra outro e rode .\Doctor.ps1 -Fix de novo."
+            Ok "Node instalado. FECHE este terminal, abra outro e rode .\Instalar.bat de novo."
             Write-Host ""
             exit 0
         } else {
@@ -248,8 +249,8 @@ if ($Fix) {
         }
     }
 
-    $setup = Join-Path $root "setup.ps1"
-    if (-not (Test-Path $setup)) { Falha "setup.ps1 nao encontrado."; exit 1 }
+    $setup = Join-Path $here "setup.ps1"
+    if (-not (Test-Path $setup)) { Falha "scripts\\windows\\setup.ps1 nao encontrado."; exit 1 }
     $argsSetup = @()
     if ($Cpu) { $argsSetup += "-Cpu" }
     if ($Overlay) { $argsSetup += "-Overlay" }
@@ -269,14 +270,13 @@ Titulo "Como iniciar"
 $prontoBase = (Test-Path $vpy) -and (Test-Path $dist)
 if (-not $prontoBase -and -not $Fix) {
     Write-Host "  Ainda falta instalar. Rode:" -ForegroundColor Yellow
-    Write-Host "      .\Doctor.ps1 -Fix" -ForegroundColor White
-    Write-Host "  ou de um duplo clique em  Instalar.bat" -ForegroundColor White
+    Write-Host "      .\Instalar.bat" -ForegroundColor White
+    Write-Host "  ou  .\scripts\windows\doctor.ps1 -Fix" -ForegroundColor White
 } else {
-    Write-Host "  1. Duplo clique em   Start-Browser.ps1     (navegador, mais simples)" -ForegroundColor White
-    if (Test-Path (Join-Path $root "WhisperBridge-UI.exe")) {
-        Write-Host "  2. Ou duplo clique em  WhisperBridge.bat     (janela flutuante)" -ForegroundColor White
-    } else {
-        Write-Host "  2. Janela flutuante:  .\Doctor.ps1 -Fix -Overlay" -ForegroundColor DarkGray
+    Write-Host "  1. Duplo clique em   WhisperBridge.bat     (janela flutuante)" -ForegroundColor White
+    Write-Host "  2. Ou no terminal:   .\scripts\windows\start-browser.ps1" -ForegroundColor White
+    if (-not (Test-Path (Join-Path $root "WhisperBridge-UI.exe"))) {
+        Write-Host "     (sem overlay compilado o .bat abre o navegador)" -ForegroundColor DarkGray
     }
     Write-Host ""
     Write-Host "  Na tela: escolha Som do PC ou Microfone  ->  Iniciar" -ForegroundColor DarkGray
@@ -286,7 +286,7 @@ if (-not $prontoBase -and -not $Fix) {
 
 Write-Host ""
 if (-not $Fix -and $faltas.Count -gt 0) {
-    Write-Host "  Proximo passo:  .\Doctor.ps1 -Fix" -ForegroundColor Cyan
+    Write-Host "  Proximo passo:  .\Instalar.bat" -ForegroundColor Cyan
     Write-Host ""
 }
 exit 0

@@ -1,6 +1,6 @@
 # Reinstala o atalho WhisperBridge na Area de Trabalho (silencioso, sem terminal)
-$proj = $PSScriptRoot
-if (-not $proj) { $proj = Split-Path -Parent $MyInvocation.MyCommand.Path }
+$here = if ($PSScriptRoot) { $PSScriptRoot } else { Split-Path -Parent $MyInvocation.MyCommand.Path }
+$proj = (Resolve-Path (Join-Path $here "..\..")).Path
 $desktop = [Environment]::GetFolderPath("Desktop")
 $srcIco = Join-Path $proj "assets\brand\whisperbridge.ico"
 $deskIco = Join-Path $desktop "WhisperBridge-app.ico"

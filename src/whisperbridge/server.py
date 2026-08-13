@@ -18,26 +18,26 @@ from math import gcd
 import os
 from dotenv import load_dotenv
 
-load_dotenv(os.path.join(os.path.dirname(__file__), "..", "..", "..", ".env"))
+load_dotenv(os.path.join(os.path.dirname(__file__), "..", "..", ".env"))
 
-from shared import user_settings as uset
+from .config import settings as uset
 uset.load()  # overlay do user-settings.json em cima do .env
 
-from ..audio.backend import pyaudio, is_loopback, host_api, display_name
+from .audio.backend import pyaudio, is_loopback, host_api, display_name
 
-from ..vad.detector import VoiceDetector
-from ..vad.buffer import VoiceBuffer, AudioSegment
-from ..vad.speaker_tracker import load_tracker, SpeakerTracker
-from ..transcription.whisper_engine import (
+from .vad.detector import VoiceDetector
+from .vad.buffer import VoiceBuffer, AudioSegment
+from .vad.speaker_tracker import load_tracker, SpeakerTracker
+from .transcription.whisper_engine import (
     WhisperEngine, collapse_repeats, similar_enough,
 )
-from ..translation.translator import Translator
-from ..translation.glossary import apply_glossary
-from ..translation.ptbr import to_ptbr
-from ..translation.llm_translator import (
+from .translation.translator import Translator
+from .translation.glossary import apply_glossary
+from .translation.ptbr import to_ptbr
+from .translation.llm_translator import (
     CloudTranslator, load_cloud_translator, is_portuguese_target,
 )
-from shared import profiles as prof
+from .config import profiles as prof
 
 SAMPLE_RATE = 16000
 # 1600 samples @ 16kHz = 100ms — antes era 8000 (500ms), o que atrasava VAD e legendas
@@ -632,8 +632,8 @@ async def _broadcaster():
 
 
 def _project_root() -> str:
-    # server.py -> websocket -> speech_engine -> services -> root
-    return os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
+    # src/whisperbridge/server.py -> raiz do repo
+    return os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 
 
 def _vram() -> dict:
@@ -1104,5 +1104,5 @@ except Exception as _e:
 
 
 if __name__ == "__main__":
-    from shared.ports import ENGINE_HOST, ENGINE_PORT
+    from .config.ports import ENGINE_HOST, ENGINE_PORT
     uvicorn.run(app, host=ENGINE_HOST, port=ENGINE_PORT, log_level="warning")
