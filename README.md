@@ -1,46 +1,74 @@
 <p align="center">
-  <img src="assets/brand/whisperbridge-icon.png" width="96" alt="WhisperBridge">
+  <img src="assets/brand/whisperbridge-icon.png" width="112" alt="Logo WhisperBridge: ponte luminosa sobre um equalizador em ciano e violeta">
 </p>
 
 <h1 align="center">WhisperBridge</h1>
 
 <p align="center">
-  <b>PT</b> Legendas ao vivo para reuniões em inglês · no seu Windows · áudio nunca sai do PC<br>
-  <b>EN</b> Live meeting subtitles on Windows · audio stays on your machine
+  <b>Legendas ao vivo para reuniões no Zoom, Microsoft Teams e Google Meet.</b><br>
+  Transcreve o áudio do seu computador com Whisper <i>neste</i> PC e mostra a tradução numa janela por cima da chamada.
 </p>
 
 <p align="center">
   <a href="#português">Português</a> ·
   <a href="#english">English</a>
+  &nbsp;·&nbsp;
+  <img alt="Windows" src="https://img.shields.io/badge/Windows-10%2F11-0ea5e9">
+  <img alt="Linux" src="https://img.shields.io/badge/Linux-Pulse%2FPipeWire-a855f7">
+  <img alt="Python" src="https://img.shields.io/badge/Python-3.10–3.12-22d3ee">
+  <img alt="License" src="https://img.shields.io/badge/license-MIT-334155">
 </p>
 
 <p align="center">
-  <img src="assets/docs/hero.jpg" width="720" alt="WhisperBridge">
+  <img src="assets/docs/hero.jpg" width="880" alt="WhisperBridge mostrando legendas ao vivo por cima de uma videoconferência no Windows">
 </p>
 
 ---
 
 # Português
 
-Traduz o que está tocando no computador (Teams, Meet, Zoom, YouTube) ou o que entra no microfone e mostra a legenda numa janela por cima de tudo.
+O **WhisperBridge** é um tradutor de reuniões em tempo real para Windows e Linux. Ele captura o **som do PC** (ou o microfone), transforma a fala em texto com **OpenAI Whisper rodando localmente** e exibe **legendas traduzidas** numa overlay always-on-top — em cima do Zoom, do Teams, do Google Meet, de um vídeo no YouTube ou de qualquer outro app.
 
-- **Ouvir é sempre local** (Whisper). O áudio da reunião não vai para a nuvem.
-- **Traduzir** pode ser neste PC ou com a **sua** chave (Gemini, GPT, DeepSeek…).
-- Sem Rust: funciona no **navegador**. Com Rust: janela flutuante.
+Não é um plugin do Zoom. Não precisa de conta. O áudio da reunião **não vai para a nuvem**.
+
+| O que ele faz | Como |
+|---|---|
+| Legendas ao vivo em reunião de inglês | Captura WASAPI (Windows) ou monitor Pulse/PipeWire (Linux) |
+| Traduzir Teams / Zoom / Meet para português | Whisper no PC + tradução local ou com a **sua** chave (Gemini, GPT, DeepSeek…) |
+| Overlay por cima de tudo | Janela flutuante (Tauri) ou a mesma UI no navegador |
+| Privacidade | Transcrição 100% local. A nuvem, se usada, recebe só texto |
+| Sem placa de vídeo | Também roda na CPU, mais lento |
+
+### Para quem é
+
+- Quem entra em daily, standup ou cliente **em inglês** e quer ler em português (ou espanhol, tailandês, japonês…).
+- Quem assiste aula, webinar ou YouTube e precisa de **legenda instantânea**.
+- Quem não pode mandar o áudio da empresa para um serviço de transcrição na nuvem.
+
+### O que ele não é
+
+Não substitui um intérprete humano em reunião jurídica ou médica crítica. Não envia o áudio para a OpenAI. Não instala extensão no Chrome do Meet — ele ouve o que o Windows já está tocando.
+
+## Como funciona
 
 <p align="center">
-  <img src="assets/docs/fluxo-pt.svg" width="900" alt="Fluxo: captura → Whisper → tradução → legenda">
+  <img src="assets/docs/fluxo-pt.svg" width="920" alt="Fluxo WhisperBridge: 1 capturar som do PC ou microfone, 2 transcrever com Whisper local, 3 traduzir com IA ou no PC, 4 mostrar legenda por cima do Zoom Teams Meet">
 </p>
+
+1. **Capturar** — escolhe *Som do PC* (o que está saindo no fone/caixa) ou *Microfone*.
+2. **Ouvir** — o Whisper (`faster-whisper`) transcreve no seu computador, na GPU se houver NVIDIA, senão na CPU.
+3. **Traduzir** — modo local (inglês → português, sem internet) ou modo IA com a chave que você cola nas Configurações. Só o **texto** atravessa a rede.
+4. **Legendar** — a frase aparece na janela flutuante, por cima da reunião. Você escolhe o idioma da fala e o da legenda.
 
 ## O que você precisa
 
 | | |
 |---|---|
-| Sistema | Windows 10/11 ou Linux (Pulse/PipeWire) |
+| Sistema | Windows 10/11 ou Linux (PulseAudio / PipeWire) |
 | Python | **3.10, 3.11 ou 3.12** (3.13 não serve) |
-| Node.js | LTS |
-| GPU | NVIDIA ajuda bastante; sem placa também roda (mais lento) |
-| Opcional | Rust — só se quiser a janela flutuante |
+| Node.js | LTS — só para montar a interface |
+| GPU | NVIDIA ajuda bastante; sem placa também roda |
+| Opcional | Rust — só se quiser a janela flutuante em vez do navegador |
 
 ## Instalar (o mais fácil)
 
@@ -64,9 +92,9 @@ sudo apt install python3.12 python3.12-venv python3.12-dev portaudio19-dev
 
 No Linux, **Som do PC** usa o *monitor* do PulseAudio/PipeWire (`Monitor of …`). O microfone funciona igual.
 
-Ele pergunta o que fazer:
+O instalador pergunta o que fazer:
 
-1. **Só verificar este PC** — doctor: RAM, GPU, Python, Node, o que falta, **quais modos você consegue usar**
+1. **Só verificar este PC** — RAM, GPU, Python, Node, o que falta e **quais modos você consegue usar**
 2. **Instalar o que falta** (recomendado) — tenta Python/Node pelo `winget` e roda o setup
 3. **Instalar + janela flutuante** — precisa de Rust
 4. **Abrir o WhisperBridge agora**
@@ -90,8 +118,6 @@ O instalador cria o `.venv`, instala o PyTorch certo, compila a UI e gera o `.en
 ```
 
 ## Usar
-
-**Janela flutuante** (depois do overlay) ou **navegador**:
 
 ```powershell
 .\WhisperBridge.bat                          # overlay (ou navegador, se o exe não existir)
@@ -120,7 +146,7 @@ Custo típico da IA no Gemini Flash-Lite: **cerca de US$ 0,02–0,04 por hora** 
 
 ## Chave da IA (opcional)
 
-Não é obrigatória. Sem chave, o modo local já gera legendas.
+Não é obrigatória. Sem chave, o modo local já gera legendas inglês → português.
 
 1. Abra **⚙ → Idiomas e chave da IA**
 2. Gemini: [aistudio.google.com/apikey](https://aistudio.google.com/apikey)
@@ -135,6 +161,26 @@ A chave fica só na sua máquina (`user-settings.json` e `.env` — não vão pa
 | Áudio da reunião | **Não** |
 | Texto transcrito (modo IA) | Sim, só o texto, para a API que você configurou |
 | Sua chave | Só para o provedor que você escolheu |
+
+## Perguntas frequentes
+
+**Como traduzir uma reunião do Zoom, Teams ou Google Meet para português?**  
+Abra o WhisperBridge, escolha *Som do PC*, clique em *Iniciar* e deixe a reunião tocando no fone. As legendas aparecem por cima da janela. Não precisa instalar nada no Zoom/Teams.
+
+**O WhisperBridge envia o áudio da reunião para a nuvem?**  
+Não. A transcrição é local (Whisper). Se você ligar o modo IA, só o **texto** já transcrito vai para o Gemini/GPT que você configurou.
+
+**Funciona sem internet?**  
+Sim, nos modos *Neste PC*. A tradução fica em inglês → português no modelo local.
+
+**Precisa de placa NVIDIA?**  
+Não. Com placa fica bem mais rápido. Sem placa use *IA sem placa de vídeo* ou *Neste PC (sem internet)*.
+
+**Dá para legendear YouTube, filme ou qualquer app?**  
+Sim. Qualquer som que o Windows estiver tocando — o WhisperBridge ouve o loopback do sistema, não um site específico.
+
+**Qual a diferença das legendas nativas do Zoom/Teams?**  
+As nativas ficam presas naquele app, costumam mandar áudio para o provedor e você não escolhe o motor. O WhisperBridge funciona em qualquer janela, mantém o áudio no PC e usa a IA que você quiser.
 
 ## Estrutura
 
@@ -155,15 +201,22 @@ whisperbridge/
 
 # English
 
-Live subtitles for English meetings on Windows. Captures **system audio** (Teams, Meet, Zoom, YouTube) or the **microphone**, transcribes on-device with Whisper, and shows a translation overlay.
+**Live subtitles for Zoom, Microsoft Teams and Google Meet** — on your Windows or Linux machine.
 
-- **Listening is always local.** Meeting audio never leaves the PC.
-- **Translation** can stay on-device or use **your** API key (Gemini, GPT, DeepSeek…).
-- No Rust required: use the **browser**. Optional overlay window if you install Rust.
+WhisperBridge captures **system audio** (or the microphone), transcribes speech **on-device** with Whisper, and shows a translation overlay on top of the call. It is not a Zoom plugin. Meeting audio **never leaves the PC**.
+
+- Daily standups and client calls in a language you only half-follow
+- Lectures, webinars, YouTube — anything the computer is already playing
+- Teams that cannot send call audio to a cloud transcription API
 
 <p align="center">
-  <img src="assets/docs/flow-en.svg" width="900" alt="Flow: capture → Whisper → translate → subtitle">
+  <img src="assets/docs/flow-en.svg" width="920" alt="WhisperBridge flow: capture PC sound or microphone, transcribe with on-device Whisper, translate with your AI or locally, show live subtitles over Zoom Teams Meet">
 </p>
+
+1. **Capture** — *PC sound* (loopback) or *Microphone*.
+2. **Listen** — `faster-whisper` runs on your GPU or CPU. Audio stays here.
+3. **Translate** — local English → Portuguese, or your own Gemini / GPT / DeepSeek key. **Text only** goes to the network.
+4. **Subtitle** — always-on-top overlay, or the same UI in the browser. You pick spoken and subtitle languages.
 
 ## Requirements
 
@@ -198,44 +251,34 @@ sudo apt install python3.12 python3.12-venv python3.12-dev portaudio19-dev
 
 On Linux, **PC sound** uses the PulseAudio/PipeWire *monitor* device. Microphone works the same.
 
-Menu:
-
-1. **Check this PC only** — doctor: RAM, GPU, Python, Node, what’s missing, **which modes you can use**
-2. **Install what’s missing** (recommended) — tries Python/Node via `winget`, then runs setup
-3. **Install + floating window** — needs Rust
-4. **Open WhisperBridge now**
-
 From a terminal:
 
 ```powershell
 git clone https://github.com/afborda/whisperbridge.git
 cd whisperbridge
-.\Instalar.bat                              # menu (double-click also works)
-.\scripts\windows\doctor.ps1                # diagnose only
-.\scripts\windows\doctor.ps1 -Fix           # install missing pieces
+.\Instalar.bat
+.\scripts\windows\doctor.ps1 -Fix
 ```
-
-The installer creates the venv, installs the right PyTorch, builds the UI, and writes `.env`. Safe to re-run.
 
 ```powershell
 .\scripts\windows\setup.ps1 -Cpu         # force CPU
 .\scripts\windows\setup.ps1 -Speakers    # + speaker labels (needs HF_TOKEN)
-.\scripts\windows\setup.ps1 -Overlay     # + floating window (needs Rust, ~10 min)
+.\scripts\windows\setup.ps1 -Overlay     # + floating window (needs Rust)
 ```
 
 ## Run
 
 ```powershell
-.\WhisperBridge.bat                          # overlay (or browser if the exe is missing)
-.\scripts\windows\start-browser.ps1          # browser only
+.\WhisperBridge.bat
+.\scripts\windows\start-browser.ps1
 ```
 
-1. Play an **English** meeting or video (or speak into the mic).
+1. Play a meeting or video (or speak into the mic).
 2. Pick **PC sound** or **Microphone**.
 3. Click **Start**.
-4. In **Recommended (AI)** (gear icon): paste your key and set spoken / subtitle languages.
+4. In **Recommended (AI)**: paste your key and set languages.
 
-Don’t use **✕** if you want the engine to keep running — **minimize** instead. ✕ shuts the engine down on purpose (frees GPU memory).
+Don’t use **✕** if you want the engine to keep running — **minimize**. ✕ frees GPU memory on purpose.
 
 Stuck process: `.\scripts\windows\stop.ps1`
 
@@ -248,17 +291,7 @@ Stuck process: `.\scripts\windows\stop.ps1`
 | **AI without GPU** | Free the graphics card for a game / other app. Listening is slower. |
 | **On this PC (offline)** | No GPU, no internet. Slowest. |
 
-Typical Gemini Flash-Lite cost: **about US$ 0.02–0.04 per hour** of meeting. Audio is not uploaded.
-
-## API key (optional)
-
-Not required. Local mode already produces subtitles.
-
-1. Open **⚙ → Languages and AI key**
-2. Gemini: [aistudio.google.com/apikey](https://aistudio.google.com/apikey)
-3. Or GPT / DeepSeek: paste key + URL + model
-
-Keys stay on your machine (`user-settings.json` and `.env` — gitignored).
+Typical Gemini Flash-Lite cost: **about US$ 0.02–0.04 per hour**. Audio is not uploaded.
 
 ## Privacy
 
@@ -267,6 +300,20 @@ Keys stay on your machine (`user-settings.json` and `.env` — gitignored).
 | Meeting audio | **No** |
 | Transcript text (AI mode) | Yes, text only, to the API you configured |
 | Your API key | Only to the provider you chose |
+
+## FAQ
+
+**How do I get live Portuguese subtitles on a Zoom / Teams / Meet call?**  
+Start WhisperBridge, pick *PC sound*, click *Start*, and leave the meeting playing. No browser extension, no Zoom marketplace app.
+
+**Does it upload meeting audio?**  
+No. Whisper runs locally. Cloud mode sends **text**, never audio.
+
+**Does it work offline?**  
+Yes, in the *On this PC* modes (English → Portuguese).
+
+**YouTube, movies, any window?**  
+Yes. It listens to the system loopback, not a specific website.
 
 ## License
 

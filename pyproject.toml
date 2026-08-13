@@ -1,7 +1,7 @@
 [project]
 name = "whisperbridge"
 version = "0.1.0"
-description = "Legendas ao vivo locais: captura o áudio do PC, transcreve com Whisper e traduz."
+description = "Legendas ao vivo para Zoom, Teams e Meet. Whisper transcreve no PC; o áudio da reunião não sai da máquina."
 readme = "README.md"
 requires-python = ">=3.10,<3.13"
 license = { text = "MIT" }
