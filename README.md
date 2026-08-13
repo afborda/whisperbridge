@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/brand/whisperbridge-icon.png" width="112" alt="Logo WhisperBridge: ponte luminosa sobre um equalizador em ciano e violeta">
+  <img src="assets/brand/whisperbridge-mark.png" width="220" alt="Logo WhisperBridge: onda sonora em forma de ponte, ciano a magenta">
 </p>
 
 <h1 align="center">WhisperBridge</h1>
